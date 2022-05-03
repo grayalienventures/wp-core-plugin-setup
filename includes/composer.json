@@ -1,0 +1,23 @@
+{
+    "require": {
+        "php": "^7.3|^8.0",
+        "justinrainbow/json-schema": "^5.2",
+        "nesbot/carbon": "^2.57"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "platform-check": false
+    },
+    "autoload": {
+        "psr-4": {
+            "WPCorePlugin\\": "./"
+        },
+        "files": [
+            "functions.php",
+            "filters_hooks.php",
+            "parse_user_agent.php"
+        ]
+    }
+}

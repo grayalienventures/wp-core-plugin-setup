@@ -1,15 +1,16 @@
 <?php
 
-namespace WP_Core_Plugin\Admin;
+namespace WPCorePlugin\Admin;
 
 use Jwt_Authentication_Profile;
-use Jwt_Authentication_Settings;
-use WP_Core_Plugin\WP_Core_Plugin;
+
+use WPCorePlugin\WPCorePlugin;
 
 //add_action( 'admin_menu', "register" );
 
-const BASE_SLUG =  WP_Core_Plugin::BASE_SLUG;
-const PLUGIN_NAME = WP_Core_Plugin::PLUGIN_NAME;
+const BASE_SLUG =  WPCorePlugin::BASE_SLUG;
+const PLUGIN_NAME = WPCorePlugin::PLUGIN_NAME;
+
 /**
  * Get the URL for an admin page.
  *
@@ -29,8 +30,33 @@ function get_url($params = [])
 function register()
 {
 
-    Admin::register();
-    Jwt_Authentication_Settings::get_instance()->register();
-    Jwt_Authentication_Profile::get_instance()->init();
-    do_action(WP_Core_Plugin::PLUGIN_NAME . "_admin_register");
+    /**
+     * Include anything we need that relies on admin classes/functions
+     */
+    $hook = add_menu_page(
+        // Page title
+        __('WP Core Plugin', PLUGIN_NAME),
+        // Menu title
+        _x('WP Core Plugin', 'menu title', PLUGIN_NAME),
+        // Capability
+        'manage_options',
+        // Menu slug
+        BASE_SLUG,
+        // Callback
+        __NAMESPACE__ . "\\dispatch"
+    );
+
+    /**
+     * first menu item 
+     */
+    Settings::register();
+
+    JwtAuthenticationSettings::get_instance()->register();
+    JwtAuthenticationProfile::get_instance()->init();
+    do_action(WPCorePlugin::PLUGIN_NAME . "_admin_register");
+}
+
+
+function dispatch()
+{
 }

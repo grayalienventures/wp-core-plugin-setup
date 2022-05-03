@@ -1,6 +1,6 @@
 <?php
 
-namespace WP_Core_Plugin;
+namespace WPCorePlugin;
 
 /**
  * Parses a user agent string into its important parts
