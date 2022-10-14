@@ -43,11 +43,8 @@ class WPCorePlugin
         $this->plugin_name = BASE_SLUG;
         $this->plugin_version = self::PLUGIN_VERSION;
         $this->uri_base =  plugin_dir_url(__FILE__);
-
         $this->load_dependencies();
         $this->bootstrap();
-
-        //add_action("init",array($this,"run"));
     }
 
 
@@ -57,6 +54,7 @@ class WPCorePlugin
 
         add_action('init', array($this, 'register_type'));
         add_action('admin_menu', __NAMESPACE__ . '\\Admin\\register');
+        add_action('rest_api_init', __NAMESPACE__ . '\\Controllers\\register');
     }
 
 
@@ -160,7 +158,7 @@ class WPCorePlugin
          * run function register 
          */
         $this->include_file('Controllers/namespace.php');
-
+      
         if (is_admin()) {
             $this->include_file('Admin/namespace.php');
         }
@@ -189,35 +187,6 @@ class WPCorePlugin
     }
 
 
-    /**
-     * get_site_url
-     */
-    public static  function  get_site_url()
-    {
-        //$protocol = isset($_SERVER['HTTPS']) ? 'https://' : 'http://';
-        //  wp_guess_url()
-
-        $protocol =  "http://";
-        if (
-            //straight
-            isset($_SERVER['HTTPS']) && in_array($_SERVER['HTTPS'], ['on', 1])
-            ||
-            //proxy forwarding
-            isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https'
-        ) {
-            $protocol = 'https://';
-        }
-
-        $parse_url = wp_parse_url(home_url());
-        $path = "";
-        if (is_array($parse_url) && isset($parse_url['path'])) {
-            $path = $parse_url['path'];
-        }
-
-
-        $domainName = $_SERVER['HTTP_HOST'];
-        return $protocol . $domainName . $path;
-    }
 }
 
 

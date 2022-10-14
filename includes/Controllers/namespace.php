@@ -27,7 +27,7 @@ function register()
         // wp/v2/token
         AuthenticationController::class,
     ];
-
+   
     foreach ($routes as $key => $class) {
         $refl = new \ReflectionClass($class);
         $instance =  $refl->newInstance();

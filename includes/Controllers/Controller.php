@@ -93,7 +93,7 @@ abstract class Controller extends WP_REST_Controller
     public function check_jwt_auth_except($require_token, $request_uri, $request_method)
     {
 
-     
+
         $paths_not_require_token = $this->except_auth_jwt();
         foreach ($paths_not_require_token as $key => $value) {
             if (('POST' === $request_method || 'OPTIONS' === $request_method) && strpos($request_uri, $value)) {
@@ -241,7 +241,7 @@ abstract class Controller extends WP_REST_Controller
      */
     protected function get_url_from_request($request)
     {
-        return   WPCorePlugin::get_site_url() . "/" . rest_get_url_prefix()  . $request->get_route();
+        return   self::get_site_url() . "/" . rest_get_url_prefix()  . $request->get_route();
     }
     /**
      * get_base_url
@@ -250,6 +250,34 @@ abstract class Controller extends WP_REST_Controller
     {
         $path = !empty($path) ? "/" . $path : "";
 
-        return WPCorePlugin::get_site_url() . "/" . rest_get_url_prefix() . "/" . $this->namespace . "/" . $this->rest_base . $path;
+        return self::get_site_url() . "/" . rest_get_url_prefix() . "/" . $this->namespace . "/" . $this->rest_base . $path;
+    }
+
+
+    /**
+     * get_site_url
+     */
+    public static  function  get_site_url()
+    {
+        $protocol =  "http://";
+        if (
+            //straight
+            isset($_SERVER['HTTPS']) && in_array($_SERVER['HTTPS'], ['on', 1])
+            ||
+            //proxy forwarding
+            isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https'
+        ) {
+            $protocol = 'https://';
+        }
+
+        $parse_url = wp_parse_url(home_url());
+        $path = "";
+        if (is_array($parse_url) && isset($parse_url['path'])) {
+            $path = $parse_url['path'];
+        }
+
+
+        $domainName = $_SERVER['HTTP_HOST'];
+        return $protocol . $domainName . $path;
     }
 }

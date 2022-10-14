@@ -10,22 +10,20 @@
 namespace WPCorePlugin\Controllers;
 
 use Exception;
-use LucrumCorePlugin\Controllers\Controller;
-use WPCorePlugin\JWT\JWT as JWT;
+
+
 use WP_Error;
 use WP_REST_Controller;
 use WP_REST_Request;
 use WP_User;
+use WPCorePlugin\JWT\JWT;
 
 use function WPCorePlugin\debug_log;
 
 class AuthenticationController extends Controller
 {
 
-	protected $rest_base;
-
-	protected $namespace;
-
+	
 	protected $secret_key;
 	/**
 	 * Store errors to display if the JWT is wrong
@@ -71,8 +69,6 @@ class AuthenticationController extends Controller
 	 */
 	public function init()
 	{
-
-		// add_action('rest_api_init', array($this, 'add_api_routes'));
 		add_filter('rest_api_init', array($this, 'add_cors_support'));
 		add_filter('rest_pre_dispatch', array($this, 'rest_pre_dispatch'), 10, 2);
 		add_filter('rest_authentication_errors', array($this, 'authenticate'));
@@ -85,8 +81,6 @@ class AuthenticationController extends Controller
 	 */
 	public function http_request_args($r, $url)
 	{
-		//error_log('http_request_args');
-		$admin_ajax = admin_url('admin-ajax.php');
 		$header = $this->get_auth_header();
 		if (is_wp_error($header)) {
 			return $r;
@@ -98,7 +92,6 @@ class AuthenticationController extends Controller
 			//return $token;
 			return $r;
 		}
-		//error_log('token: '.$token );
 		$r['headers']['Authorization'] = 'Bearer ' . $token;
 		return $r;
 	}
@@ -252,14 +245,11 @@ class AuthenticationController extends Controller
 	 */
 	public function add_cors_support()
 	{
-		// $enable_cors = AuthenticationApi::get_cors();
 		$enable_cors = true;
 		if ($enable_cors) {
 			$headers = apply_filters('jwt_auth_cors_allow_headers', 'Access-Control-Allow-Headers, Content-Type, Authorization, x-custom-header');
 			header(sprintf('Access-Control-Allow-Headers: %s', $headers));
 		}
-		// $request_uri    = isset($_SERVER['REQUEST_URI']) ? sanitize_text_field($_SERVER['REQUEST_URI']) : false;
-		// debug_log("add_cors_support",$request_uri);
 	}
 
 
@@ -321,13 +311,9 @@ class AuthenticationController extends Controller
 
 
 		$response = $this->append_refresh_token($response, $user, $request, $payload['uuid']);
-
-		//error_log("response" . print_r($response, true));
 		$jwt_data   = $this->get_user_jwt_data($user->ID);
 		$new_jwt_data = array(
 			'uuid'      	=>  $payload['uuid'],
-			// 'issued_at' => $payload['issued_at'],
-			// 'expires'   => $payload['expires'],
 			'ip'        	=> self::get_ip(),
 			'ua'        	=> $_SERVER['HTTP_USER_AGENT'],
 			'created'   	=> date('F j, Y g:i a',  time()),
@@ -336,11 +322,7 @@ class AuthenticationController extends Controller
 			'refresh_token' => $response['refresh_token'],
 		);
 		$jwt_data[] = $new_jwt_data;
-
-		//error_log("new_jwt_data" . print_r($new_jwt_data, true));
 		update_user_meta($user->data->ID, 'jwt_data', apply_filters('jwt_auth_save_user_data', $jwt_data));
-
-
 		return  apply_filters(
 			'rest_authentication_token_rrefresh_token_response',
 			$response,
@@ -498,13 +480,9 @@ class AuthenticationController extends Controller
 		if (is_wp_error($payload)) {
 			return $payload;
 		}
-
-
 		// Generate JWT token.
 		$response['refresh_token'] = $this->jwt('encode', $payload, $this->secret_key);
-
 		// Setup some user meta data we can use for our UI.
-		// error_log(print_r($response,true));
 		return $response;
 	}
 
@@ -517,8 +495,6 @@ class AuthenticationController extends Controller
 	 */
 	public function decode_token($token)
 	{
-
-		//error_log("decode_token".$token);
 		try {
 			return $this->jwt('decode', $token, $this->secret_key, array('HS256'));
 		} catch (Exception $e) {
@@ -541,7 +517,6 @@ class AuthenticationController extends Controller
 	 */
 	public function refresh_token($request)
 	{
-		//error_log("refresh_token".print_r($request,true));
 		// validate refresh token 
 		$token = $this->validate_token(false, true);
 
@@ -558,8 +533,6 @@ class AuthenticationController extends Controller
 				)
 			);
 		}
-		// error_log("refresh_token->token".print_r($token,true));
-		//error_log("refresh_token->user" . print_r($token->data->user, true));
 		if (!isset($token->data->user->token_type) || 'refresh' !== $token->data->user->token_type) {
 			return new WP_Error(
 				'rest_authentication_invalid_token_type',
@@ -632,22 +605,10 @@ class AuthenticationController extends Controller
 				break;
 			}
 		}
-
-		// error_log('response' . print_r($response, true));
-		// foreach ((array) $jwt_data as $_key => $item) {
-
-		// 	if (isset($item['uuid']) && $item['uuid'] == $token_uuid) {
-		// 		error_log('jwt_data' . print_r($jwt_data[$_key], true));
-		// 		break;
-		// 	}
-		// }
-
-
 		update_user_meta($token->data->user->id, 'jwt_data', apply_filters('jwt_auth_save_user_data', $jwt_data));
 		// Generate JWT token.
 		// Let the user modify the data before send it back.
 		return $response;
-		// return apply_filters( 'jwt_auth_token_before_dispatch', $payload, $user );
 	}
 
 
@@ -789,12 +750,7 @@ class AuthenticationController extends Controller
 
 		$title   = apply_filters('retrieve_password_title', $title);
 		$message = apply_filters('retrieve_password_message', $message, $key);
-
-		// $headers = 'From: noreply@atlaslabor.com' . "\r\n";
-		//error_log("message rest password: " . $message);
 		if ($message && !wp_mail($user_email, $title, $message)) {
-
-			//update_user_meta($user_data->ID, "code_pin", "");
 			error_log("Possible reason: your host may have disabled the mail() function...");
 			return new WP_Error(
 				"[jwt_auth]_reset_config_mail",
@@ -1075,9 +1031,6 @@ class AuthenticationController extends Controller
 				break;
 			}
 		}
-		//error_log("request_uri: " . $request_uri);
-
-		//error_log("require_token: " . $require_token);
 		/**
 		 * Filters whether a REST endpoint requires JWT authentication.
 		 *
@@ -1451,11 +1404,6 @@ class AuthenticationController extends Controller
 
 		foreach ($jwt_data as $key => $token_data) {
 			if (isset($token_data['uuid']) &&  $token_data['uuid'] === $jwt->uuid) {
-				// error_log("token: " . print_r($token, true));
-				// error_log("token->db: " . print_r($token_data['token'], true));
-				// error_log("refresh_token->db: " . print_r($token_data['refresh_token'], true));
-				// //error_log("jwt" . print_r($jwt, true));
-				//error_log(print_r($token_data, true));
 				if ($is_refresh && isset($token_data['refresh_token']) &&  $token_data['refresh_token'] == $token) {
 					return true;
 				} else if (isset($token_data['token']) &&  $token_data['token'] == $token) {
@@ -1603,4 +1551,4 @@ class AuthenticationController extends Controller
 	}
 }
 
-new AuthenticationController();
+
