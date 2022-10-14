@@ -1,6 +1,6 @@
 <?php
 
-namespace WP_Core_Plugin\JWT;
+namespace WPCorePlugin\JWT;
 use \DomainException;
 use \InvalidArgumentException;
 use \UnexpectedValueException;

@@ -1,5 +1,5 @@
 <?php
-namespace WP_Core_Plugin\JWT;
+namespace WPCorePlugin\JWT;
 
 class SignatureInvalidException extends \UnexpectedValueException
 {
