@@ -3,7 +3,7 @@
 /**
  * Plugin Name: WP Core Plugin
  * Plugin URI: https:/intp.io
- * Description: A moving industry plugin to help manage your operations and client interactions.
+ * Description: A plugin that exposes core functionality to a full-featured web app.
  * Version: 0.1
  * Author: INTP LLC
  * Author URI: https://intp.io
